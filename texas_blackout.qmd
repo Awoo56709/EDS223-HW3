@@ -1,0 +1,93 @@
+---
+title: "texas_blackout"
+format: html
+editor: visual
+code-fold: False
+---
+
+# Add screenshow of README here
+
+# Background
+
+Climate change is increasing the frequency and intensity of extreme weather events, with devastating impacts. “In February 2021, the state of Texas suffered a major power crisis, which came about as a result of three severe winter storms sweeping across the United States on February 10–11, 13–17, and 15–20.”1 For more background, check out these engineering and political perspectives.
+
+In this assignment, you will identify the impacts of these series of extreme winter storms by estimating the number of homes in the Houston metropolitan area that lost power and investigate whether not these impacts were disproportionately felt.
+
+Your analysis will be based on remotely-sensed night lights data, acquired from the Visible Infrared Imaging Radiometer Suite (VIIRS) onboard the Suomi satellite. In particular, you will use the VNP46A1 to detect differences in night lights before and after the storm to identify areas that lost electric power.
+
+To determine the number of homes that lost power, you link (spatially join) these areas with OpenStreetMap data on buildings and roads.
+
+To investigate potential socioeconomic factors that influenced recovery, you will link your analysis with data from the US Census Bureau.
+
+#Description
+
+For this assignment, you must produce the following:
+
+- a set of maps comparing night light intensities before and after the first two storms
+- a map of the homes in Houston that lost power
+- an estimate of the number of homes in Houston that lost power
+- a map of the census tracts in Houston that lost power
+- a plot comparing the distributions of median household income for census tracts that did and did not experience blackouts
+- a brief reflection (approx. 100 words) summarizing your results and discussing any limitations to this study
+
+```{r}
+#import libraries
+library(stars)
+library(sf)
+library(dplyr)
+```
+```{r}
+
+# reading in data and converting to common CRS
+
+feb_7 <- read_stars("data/VNP46A1/VNP46A1.A2021038.h08v05.001.2021039064328.tif") |> 
+  st_transform(4326)
+
+feb_16 <- read_stars("data/VNP46A1/VNP46A1.A2021047.h08v05.001.2021048091106.tif") |> 
+  st_transform(4326)
+
+```
+
+```{r}
+
+#calculating difference 
+
+diff <- feb_7 - feb_16
+
+```
+
+
+```{r}
+# reclassifying then determine where blackout if the drop > 200
+
+blackout_fn <- function(x) {
+  ifelse(x > 200, 1, NA)
+}
+
+blackout_mask <- diff
+blackout_mask[[1]] <- ifelse(blackout_mask[[1]] > 200, 1, NA)
+```
+
+```{r}
+# converting our mask to a vector
+
+blackout_sf <- st_as_sf(blackout_mask, as_points = FALSE) |> st_make_valid()
+```
+
+```{r}
+# creating our houston bounding box
+houston_bbox <- st_bbox(c(xmin = -96.5, ymin = 29, xmax = -94.5, ymax = 30.5), crs = blackout_sf) |>  st_transform(3083)
+```
+
+
+# Excluding Highways
+
+```{r}
+highways <- st_read('data/gis_osm_roads_free_1.gpkg', query = "SELECT * FROM gis_osm_roads_free_1 WHERE fclass='motorway'") |> st_transform(3083)
+
+# creating a buffer
+highway_buffer <- st_union(highways) |> 
+  st_buffer(200)
+```
+
+
