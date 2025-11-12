@@ -1,5 +1,5 @@
 ---
-title: "Texas Blackouts and Socioeconomic Impacts"
+title: "Texas Blackouts and Socioeconomic Lenses"
 author: "Joshua Ferrer-Lozano"
 date: "11/11/2025"
 format:
@@ -12,7 +12,7 @@ knitr:
     message: false
 ---
 
-# Add screenshow of README here
+![README](houston_blackout.png)
 
 # Background
 
@@ -274,5 +274,3 @@ ggplot(income_df, aes(x = B19202e1, fill = lost_power)) +
 These maps and estimates suggest substantial drops in night lights during the February 2021 storms, with census tracts overlapping residential areas indicating power loss. By excluding highways and validating blackout polygons, we estimate that thousands of homes lost power.
 These renders are useful in top level visualization. The night lights visualizations paint a clearer picture of the magnitude Houston was affected as a community. It is estimated that about 168,864 homes were affected.
 The income distributions hint at potential disparities in impacts as the median income plot above indicates a higher proportion of those affected by blackouts had a lower median income. The blackout distribution illustrates that those with lower median income experienced a blackout and decreased as median income increases.
-
-
