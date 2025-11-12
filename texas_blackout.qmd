@@ -189,7 +189,7 @@ blackout_clean <- blackout_sf |>
 
 ```{r}
 # Keep only homes that intersect
-homes_no_power <- st_join(homes_filtered, blackout_clean, join = st_intersects, left = FALSE)
+homes_no_power <- st_join(homes, blackout_clean, join = st_intersects, left = FALSE)
 
 # Count and print the affected homes
 n_homes_lost_power <- nrow(homes_no_power)
@@ -272,9 +272,7 @@ ggplot(income_df, aes(x = B19202e1, fill = lost_power)) +
 # Written Reflection
 
 These maps and estimates suggest substantial drops in night lights during the February 2021 storms, with census tracts overlapping residential areas indicating power loss. By excluding highways and validating blackout polygons, we estimate that thousands of homes lost power.
+These renders are useful in top level visualization. The night lights visualizations paint a clearer picture of the magnitude Houston was affected as a community. It is estimated that about 168,864 homes were affected.
+The income distributions hint at potential disparities in impacts as the median income plot above indicates a higher proportion of those affected by blackouts had a lower median income. The blackout distribution illustrates that those with lower median income experienced a blackout and decreased as median income increases.
 
-The first map illustrates homes affected by the blackouts and the second map reinforces the census tracts that were affected. While these graphs are useful in top level visualization, the night lights visuals paint a better, darker picture of the magnitude Houston was affected as a community. It is estimated about 168,864 homes were affected.=
 
-The income distributions hint at potential disparities in impacts as the median income plot above indicates a higher proportion of those affected by blackouts had a lower median income. The blackout distribution illustrates those with lower median income experienced a blackout, and decreases as median income increases. This can be due to older residential areas with less resilient grids connected to older equipment, the dispersion of energy throughout (grid mapping) etc.
-
-One thing to point out however is that there may be confounding variables involved. VIIRS can be confounded by clouds, lunar illumination, and sensors and OSM building data may be incomplete.
