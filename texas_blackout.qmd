@@ -26,7 +26,7 @@ To determine the number of homes that lost power, you link (spatially join) thes
 
 To investigate potential socioeconomic factors that influenced recovery, you will link your analysis with data from the US Census Bureau.
 
-#Description
+# Description
 
 For this assignment, you must produce the following:
 
@@ -121,10 +121,20 @@ blackout_sf <- st_as_sf(blackout_mask, as_points = FALSE) |> st_make_valid()
 # Crop to Houston bounding box
 houston_bbox <- st_as_sfc(st_bbox(c(xmin = -96.5, ymin = 29, xmax = -94.5, ymax = 30.5), crs = 4326))
 blackout_sf <- st_crop(blackout_sf, houston_bbox)
+```
 
-# Warning if no blackout detection
-if (nrow(blackout_sf) == 0) warning("No blackout areas detected at threshold.")
+## Warning and Error Verification
 
+```{r}
+# Warning if no blackout polygons detected
+if (nrow(blackout_sf) == 0) {
+  warning(sprintf("No blackout areas detected at the given threshold = %s. Try lowering the threshold or checking input tiles.", threshold))
+}
+
+# Error if homes layer is missing
+if (!exists("homes") || nrow(homes) == 0) {
+  stop("No residential building data found. Please check that the buildings layer was loaded correctly.")
+}
 ```
 
 ```{r}
@@ -149,16 +159,18 @@ ggplot(pre_df, aes(x = x, y = y, fill = VNP46A1.A2021038.h08v05.001.202103906432
   geom_raster() +
   coord_sf(xlim = c(-96.5, -94.5), ylim = c(29, 30.5)) +
   scale_fill_viridis_c(option = "E") +
-  labs(title = "Night lights before storm (Feb 7)", fill = "Radiance") +
-  theme_minimal()
+  labs(title = "Night Light Radiance Before Storm (Feb 7)", fill = "VIIRS Radiance (nW/cm^²/sr)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Plotting post storm x and y data
 ggplot(post_df, aes(x = x, y = y, fill = VNP46A1.A2021047.h08v05.001.2021048091106.tif)) +
   geom_raster() +
   coord_sf(xlim = c(-96.5, -94.5), ylim = c(29, 30.5)) +
   scale_fill_viridis_c(option = "E") +
-  labs(title = "Night lights after storm (Feb 16)", fill = "Radiance") +
-  theme_minimal()
+  labs(title = "Night Light Radiance After Storm (Feb 16)", fill = "VIIRS Radiance (nW/cm^²/sr)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
 
@@ -185,7 +197,8 @@ blackout_clean <- blackout_sf |>
   st_transform(4326)
 
 ```
-# Printing Number of Homes Affected
+
+# Estimate the Number of Homes Affected by the Storm
 
 ```{r}
 # Keep only homes that intersect
@@ -193,9 +206,19 @@ homes_no_power <- st_join(homes, blackout_clean, join = st_intersects, left = FA
 
 # Count and print the affected homes
 n_homes_lost_power <- nrow(homes_no_power)
-message(sprintf("Estimated number of homes that lost power: %s", scales::comma(n_homes_lost_power)))
+```
+
+```{r}
+affected_homes_message <- sprintf("Estimated homes that lost power: %s", scales::comma(n_homes_lost_power))
+
+# Print the formatted estimate text
+print(affected_homes_message)
 
 ```
+
+## Estimate of the Number of Homes in Houston that Lost Power
+
+We estimate that approximately 168,874 homes in Houston lost power during the February 2021 storms.
 
 # Mapping Homes Affected by Blackout
 
@@ -212,12 +235,16 @@ houston_geom <- st_crop(texas_geom, houston_bbox)
 
 ggplot() +
   geom_sf(data = houston_geom, fill = "grey95", color = "white") +
-  geom_sf(data = blackout_clean, fill = "red", color = NA, alpha = 0.4) +
-  geom_sf(data = homes_no_power, fill = "black", color = NA, alpha = 0.6) +
-  labs(title = "Homes in Houston that Lost Power") +
-  theme_minimal()
+  geom_sf(data = blackout_clean, aes(fill = "Blackout area"), color = NA, alpha = 0.4) +
+  geom_sf(data = homes_no_power, aes(fill = "Homes without power"), color = NA, alpha = 0.6) +
+  scale_fill_manual(values = c("Blackout area" = "red", "Homes without power" = "black")) +
+  labs(title = "Areas and Homes in Houston that Lost Power",
+       fill = "Legend") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
+
 # Mapping Census Tracts Affected by Blackout
 
 ```{r}
@@ -244,9 +271,11 @@ ggplot() +
   coord_sf(xlim = c(-96.5, -94.5), ylim = c(29, 30.5)) +
   labs(title = "Census Tracts in Houston that Lost Power",
        fill = "Status") +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
 
 ```
+
 # Plotting Median Household Groups by Black Out Status
 
 ```{r}
@@ -262,15 +291,15 @@ income_df <- socio_joined_df |> filter(!is.na(B19202e1))
 ggplot(income_df, aes(x = B19202e1, fill = lost_power)) +
   geom_density(alpha = 0.4) +
   scale_fill_manual(values = c("Blackout" = "#D1495B", "No blackout" = "#3A7CA5")) +
-  labs(title = "Median household income distributions by blackout status",
+  labs(title = "Median Household Income Distributions by Blackout Status",
        x = "Median household income (USD)",
        y = "Density",
        fill = "Status") +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
+
 # Written Reflection
 
-These maps and estimates suggest substantial drops in night lights during the February 2021 storms, with census tracts overlapping residential areas indicating power loss. By excluding highways and validating blackout polygons, we estimate that thousands of homes lost power.
-These renders are useful in top level visualization. The night lights visualizations paint a clearer picture of the magnitude Houston was affected as a community. It is estimated that about 168,864 homes were affected.
-The income distributions hint at potential disparities in impacts as the median income plot above indicates a higher proportion of those affected by blackouts had a lower median income. The blackout distribution illustrates that those with lower median income experienced a blackout and decreased as median income increases.
+These maps and estimates suggest substantial drops in night lights during the February 2021 storms, with census tracts overlapping residential areas indicating power loss. By excluding highways and validating blackout polygons, we estimate that thousands of homes lost power. These renders are useful in top level visualization. The night lights visualizations paint a clearer picture of the magnitude Houston was affected as a community. It is estimated that about 168,864 homes were affected. The income distributions hint at potential disparities in impacts as the median income plot above indicates a higher proportion of those affected by blackouts had a lower median income. The blackout distribution illustrates that those with lower median income experienced a blackout and decreased as median income increases.
