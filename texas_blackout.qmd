@@ -123,7 +123,7 @@ houston_bbox <- st_as_sfc(st_bbox(c(xmin = -96.5, ymin = 29, xmax = -94.5, ymax 
 blackout_sf <- st_crop(blackout_sf, houston_bbox)
 ```
 
-## Warning and Error Verification
+# Warning and Error Verification
 
 ```{r}
 # Warning if no blackout polygons detected
@@ -198,7 +198,7 @@ blackout_clean <- blackout_sf |>
 
 ```
 
-# Estimate the Number of Homes Affected by the Storm
+# Estimating the Number of Homes Affected by the Storm
 
 ```{r}
 # Keep only homes that intersect
