@@ -128,7 +128,7 @@ blackout_sf <- st_crop(blackout_sf, houston_bbox)
 ```{r}
 # Warning if no blackout polygons detected
 if (nrow(blackout_sf) == 0) {
-  warning(sprintf("No blackout areas detected at the given threshold = %s. Try lowering the threshold or checking input tiles.", threshold))
+  warning(sprintf("No blackout areas detected at the given threshold = %s. This may indicate the wrong threshold or misaligned tiles.", threshold))
 }
 
 # Error if homes layer is missing
@@ -216,7 +216,7 @@ print(affected_homes_message)
 
 ```
 
-## Estimate of the Number of Homes in Houston that Lost Power
+## Estimating of the Number of Homes in Houston that Lost Power
 
 We estimate that approximately 168,874 homes in Houston lost power during the February 2021 storms.
 
@@ -292,7 +292,7 @@ ggplot(income_df, aes(x = B19202e1, fill = lost_power)) +
   geom_density(alpha = 0.4) +
   scale_fill_manual(values = c("Blackout" = "#D1495B", "No blackout" = "#3A7CA5")) +
   labs(title = "Median Household Income Distributions by Blackout Status",
-       x = "Median household income (USD)",
+       x = "Median Household Income (USD)",
        y = "Density",
        fill = "Status") +
   theme_minimal() +
